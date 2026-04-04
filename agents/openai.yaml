@@ -1,0 +1,4 @@
+interface:
+  display_name: "TradingAgents CN"
+  short_description: "登录 TradingAgentsCN 并调用其核心流程"
+  default_prompt: "使用 $tradingagents-cn 登录 TradingAgentsCN，并完成股票分析、持仓分析、交易复盘、自选股管理或交易计划相关任务。"

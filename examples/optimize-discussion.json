@@ -1,0 +1,83 @@
+{
+  "trading_plan_data": {
+    "name": "趋势波段系统",
+    "description": "中线趋势跟随，优先做强势行业龙头，强调可执行性和回撤控制。",
+    "style": "medium_term",
+    "risk_profile": "balanced",
+    "stock_selection": {
+      "must_have": [
+        {
+          "rule": "最近60日相对强度靠前",
+          "description": "优先选强势股。"
+        }
+      ],
+      "exclude": [
+        {
+          "rule": "财务异常或存在重大风险提示",
+          "description": "减少踩雷概率。"
+        }
+      ],
+      "bonus": [
+        {
+          "rule": "行业景气上行",
+          "description": "顺着产业趋势提高成功率。"
+        }
+      ]
+    },
+    "timing": {
+      "market_condition": {
+        "rule": "大盘环境偏强",
+        "description": "指数和情绪同步改善。"
+      },
+      "entry_signals": [
+        {
+          "signal": "突破",
+          "condition": "放量突破平台高点。"
+        }
+      ],
+      "confirmation": [
+        {
+          "rule": "次日不跌回平台",
+          "description": "避免假突破。"
+        }
+      ]
+    },
+    "risk_management": {
+      "stop_loss": {
+        "type": "percentage",
+        "percentage": 0.08
+      },
+      "take_profit": {
+        "type": "trailing",
+        "trailing_pullback_pct": 0.08,
+        "activation_profit_pct": 0.12,
+        "reference": "highest_price"
+      }
+    }
+  },
+  "evaluation_result": {
+    "overall_score": 72,
+    "grade": "B",
+    "summary": "计划主框架完整，但止盈细则、仓位联动和执行纪律还不够细。",
+    "suggestions": [
+      "补充更细的止盈与分批减仓规则",
+      "增强仓位与市场环境联动",
+      "提高纪律规则的可执行性"
+    ]
+  },
+  "user_question": "如果我优先优化风险控制和执行纪律，最值得先改哪两点？请给我可以直接应用的 patch。",
+  "selected_suggestions": [
+    "补充更细的止盈与分批减仓规则",
+    "提高纪律规则的可执行性"
+  ],
+  "conversation_history": [
+    {
+      "role": "user",
+      "content": "我想把这套计划做得更可执行。"
+    },
+    {
+      "role": "assistant",
+      "content": "建议优先补止盈细则和纪律约束。"
+    }
+  ]
+}

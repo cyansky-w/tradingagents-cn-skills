@@ -1,0 +1,85 @@
+{
+  "name": "趋势波段系统",
+  "description": "中线趋势跟随，优先做强势行业龙头，强调可执行性和回撤控制。",
+  "style": "medium_term",
+  "risk_profile": "balanced",
+  "stock_selection": {
+    "must_have": [
+      {
+        "rule": "最近60日相对强度靠前",
+        "description": "优先选强势股，避免逆势抄底。"
+      },
+      {
+        "rule": "主营业务清晰且业绩未明显恶化",
+        "description": "避免逻辑混乱或基本面明显走弱的标的。"
+      }
+    ],
+    "exclude": [
+      {
+        "rule": "财务异常或存在重大风险提示",
+        "description": "减少踩雷概率。"
+      }
+    ],
+    "bonus": [
+      {
+        "rule": "行业景气上行",
+        "description": "顺着产业趋势提高成功率。"
+      }
+    ]
+  },
+  "timing": {
+    "market_condition": {
+      "rule": "大盘环境偏强",
+      "description": "指数和市场情绪同步改善时再积极出手。"
+    },
+    "entry_signals": [
+      {
+        "signal": "突破",
+        "condition": "放量突破平台高点，且收盘站稳。"
+      },
+      {
+        "signal": "回踩确认",
+        "condition": "突破后回踩不破关键支撑并重新转强。"
+      }
+    ],
+    "confirmation": [
+      {
+        "rule": "次日不跌回平台",
+        "description": "避免假突破。"
+      }
+    ]
+  },
+  "position": {
+    "max_per_stock": 0.3,
+    "max_holdings": 5,
+    "min_holdings": 1
+  },
+  "risk_management": {
+    "stop_loss": {
+      "type": "percentage",
+      "percentage": 0.08
+    },
+    "take_profit": {
+      "type": "trailing",
+      "trailing_pullback_pct": 0.08,
+      "activation_profit_pct": 0.12,
+      "reference": "highest_price"
+    }
+  },
+  "review": {
+    "frequency": "weekly",
+    "checklist": [
+      "是否按计划执行",
+      "是否存在情绪化交易",
+      "止损止盈是否到位"
+    ]
+  },
+  "discipline": {
+    "must_not": [
+      {
+        "rule": "不在无计划状态下追涨",
+        "description": "避免临盘情绪决策。"
+      }
+    ]
+  }
+}
