@@ -16,13 +16,13 @@
 ### 先确保 Token
 
 ```bash
-python docs/skills/tradingagents-cn/scripts/ensure_tradingagents_token.py
+python /workspace/projects/workspace/skills/tradingagents-cn/scripts/ensure_tradingagents_token.py
 ```
 
 ### 再统一通过脚本发请求
 
 ```bash
-python docs/skills/tradingagents-cn/scripts/invoke_tradingagents_api.py \
+python /workspace/projects/workspace/skills/tradingagents-cn/scripts/invoke_tradingagents_api.py \
   --method GET \
   --path /auth/me
 ```
@@ -52,17 +52,17 @@ AI 以后主要只需要决定：
 示例：
 
 ```bash
-python docs/skills/tradingagents-cn/scripts/invoke_tradingagents_api.py \
+python /workspace/projects/workspace/skills/tradingagents-cn/scripts/invoke_tradingagents_api.py \
   --method POST \
   --path /v1/trading-systems/evaluate-draft \
-  --body-file docs/skills/tradingagents-cn/examples/evaluate-draft.json
+  --body-file /workspace/projects/workspace/skills/tradingagents-cn/examples/evaluate-draft.json
 ```
 
 ```bash
-python docs/skills/tradingagents-cn/scripts/invoke_tradingagents_api.py \
+python /workspace/projects/workspace/skills/tradingagents-cn/scripts/invoke_tradingagents_api.py \
   --method POST \
   --path /v1/trading-systems/optimize-discussion \
-  --body-file docs/skills/tradingagents-cn/examples/optimize-discussion.json
+  --body-file /workspace/projects/workspace/skills/tradingagents-cn/examples/optimize-discussion.json
 ```
 
 ## 1. 登录
@@ -95,7 +95,7 @@ python docs/skills/tradingagents-cn/scripts/invoke_tradingagents_api.py \
 ### 脚本调用
 
 ```bash
-python docs/skills/tradingagents-cn/scripts/invoke_tradingagents_api.py \
+python /workspace/projects/workspace/skills/tradingagents-cn/scripts/invoke_tradingagents_api.py \
   --method GET \
   --path /auth/me
 ```
@@ -140,13 +140,21 @@ python docs/skills/tradingagents-cn/scripts/invoke_tradingagents_api.py \
     - `engine`
     - `workflow_id`
 
+`selected_analysts` 当前已确认可用值：
+- `market`
+- `fundamentals`
+- `news`
+- `sector_analyst`
+- `index_analyst`
+- `social`
+
 ### 脚本调用模板
 
 ```bash
-python docs/skills/tradingagents-cn/scripts/invoke_tradingagents_api.py \
+python /workspace/projects/workspace/skills/tradingagents-cn/scripts/invoke_tradingagents_api.py \
   --method POST \
   --path /analysis/single \
-  --body "{\"symbol\":\"000001\",\"parameters\":{\"market_type\":\"A股\",\"research_depth\":\"标准\",\"include_sentiment\":true,\"include_risk\":true,\"language\":\"zh-CN\",\"quick_analysis_model\":\"qwen-turbo\",\"deep_analysis_model\":\"qwen-max\",\"engine\":\"v2\",\"custom_prompt\":\"重点看基本面质量、风险点，以及未来1到3个月的观察位\"}}"
+  --body "{\"symbol\":\"000001\",\"parameters\":{\"market_type\":\"A股\",\"research_depth\":\"标准\",\"selected_analysts\":[\"fundamentals\",\"news\",\"market\"],\"include_sentiment\":true,\"include_risk\":true,\"language\":\"zh-CN\",\"quick_analysis_model\":\"qwen-turbo\",\"deep_analysis_model\":\"qwen-max\",\"engine\":\"v2\",\"custom_prompt\":\"重点看基本面质量、风险点，以及未来1到3个月的观察位\"}}"
 ```
 
 ## 4. 批量分析
@@ -163,13 +171,21 @@ python docs/skills/tradingagents-cn/scripts/invoke_tradingagents_api.py \
   - 顶层字段：`title`、`description`、`symbols`、`parameters`
   - `symbols` 最多 `10` 个
 
+`parameters.selected_analysts` 同样使用这组枚举值：
+- `market`
+- `fundamentals`
+- `news`
+- `sector_analyst`
+- `index_analyst`
+- `social`
+
 ### 脚本调用模板
 
 ```bash
-python docs/skills/tradingagents-cn/scripts/invoke_tradingagents_api.py \
+python /workspace/projects/workspace/skills/tradingagents-cn/scripts/invoke_tradingagents_api.py \
   --method POST \
   --path /analysis/batch \
-  --body "{\"title\":\"核心候选股对比\",\"description\":\"比较多只候选股，输出排序和后续重点跟踪对象\",\"symbols\":[\"000001\",\"600519\",\"000858\"],\"parameters\":{\"market_type\":\"A股\",\"research_depth\":\"标准\",\"include_sentiment\":true,\"include_risk\":true,\"language\":\"zh-CN\",\"engine\":\"v2\",\"custom_prompt\":\"请输出排序结果，并说明最值得继续深挖的前2只股票\"}}"
+  --body "{\"title\":\"核心候选股对比\",\"description\":\"比较多只候选股，输出排序和后续重点跟踪对象\",\"symbols\":[\"000001\",\"600519\",\"000858\"],\"parameters\":{\"market_type\":\"A股\",\"research_depth\":\"标准\",\"selected_analysts\":[\"fundamentals\",\"sector_analyst\",\"market\"],\"include_sentiment\":true,\"include_risk\":true,\"language\":\"zh-CN\",\"engine\":\"v2\",\"custom_prompt\":\"请输出排序结果，并说明最值得继续深挖的前2只股票\"}}"
 ```
 
 ## 5. 分析任务状态与结果
@@ -211,7 +227,7 @@ python docs/skills/tradingagents-cn/scripts/invoke_tradingagents_api.py \
 ### 脚本调用模板
 
 ```bash
-python docs/skills/tradingagents-cn/scripts/invoke_tradingagents_api.py \
+python /workspace/projects/workspace/skills/tradingagents-cn/scripts/invoke_tradingagents_api.py \
   --method GET \
   --path /analysis/tasks/TASK_ID/status
 ```
@@ -219,7 +235,7 @@ python docs/skills/tradingagents-cn/scripts/invoke_tradingagents_api.py \
 更推荐：
 
 ```bash
-python docs/skills/tradingagents-cn/scripts/wait_for_task.py \
+python /workspace/projects/workspace/skills/tradingagents-cn/scripts/wait_for_task.py \
   --task-id TASK_ID \
   --depth 标准
 ```
@@ -242,7 +258,7 @@ python docs/skills/tradingagents-cn/scripts/wait_for_task.py \
 - `GET /portfolio/positions`
 
 ```bash
-python docs/skills/tradingagents-cn/scripts/invoke_tradingagents_api.py \
+python /workspace/projects/workspace/skills/tradingagents-cn/scripts/invoke_tradingagents_api.py \
   --method GET \
   --path /portfolio/positions
 ```
@@ -255,7 +271,7 @@ python docs/skills/tradingagents-cn/scripts/invoke_tradingagents_api.py \
   - `research_depth`
 
 ```bash
-python docs/skills/tradingagents-cn/scripts/invoke_tradingagents_api.py \
+python /workspace/projects/workspace/skills/tradingagents-cn/scripts/invoke_tradingagents_api.py \
   --method POST \
   --path /portfolio/analysis \
   --body "{\"include_paper\":true,\"research_depth\":\"标准\"}"
@@ -282,7 +298,7 @@ python docs/skills/tradingagents-cn/scripts/invoke_tradingagents_api.py \
   - `use_stock_analysis`
 
 ```bash
-python docs/skills/tradingagents-cn/scripts/invoke_tradingagents_api.py \
+python /workspace/projects/workspace/skills/tradingagents-cn/scripts/invoke_tradingagents_api.py \
   --method POST \
   --path /portfolio/positions/analyze-by-code \
   --body "{\"code\":\"000001\",\"market\":\"CN\",\"research_depth\":\"标准\",\"include_add_position\":true,\"target_profit_pct\":20.0,\"total_capital\":300000,\"max_position_pct\":30.0,\"max_loss_pct\":10.0,\"risk_tolerance\":\"medium\",\"investment_horizon\":\"medium\",\"analysis_focus\":\"comprehensive\",\"position_type\":\"real\",\"use_stock_analysis\":true}"
@@ -304,7 +320,7 @@ python docs/skills/tradingagents-cn/scripts/invoke_tradingagents_api.py \
   - `use_workflow`
 
 ```bash
-python docs/skills/tradingagents-cn/scripts/invoke_tradingagents_api.py \
+python /workspace/projects/workspace/skills/tradingagents-cn/scripts/invoke_tradingagents_api.py \
   --method POST \
   --path /review/trade \
   --body "{\"trade_ids\":[\"trade_id_1\",\"trade_id_2\"],\"review_type\":\"complete_trade\",\"source\":\"paper\",\"use_workflow\":true}"
@@ -322,7 +338,7 @@ python docs/skills/tradingagents-cn/scripts/invoke_tradingagents_api.py \
   - `source`
 
 ```bash
-python docs/skills/tradingagents-cn/scripts/invoke_tradingagents_api.py \
+python /workspace/projects/workspace/skills/tradingagents-cn/scripts/invoke_tradingagents_api.py \
   --method POST \
   --path /review/periodic \
   --body "{\"period_type\":\"month\",\"start_date\":\"2026-04-01\",\"end_date\":\"2026-04-30\",\"source\":\"paper\"}"
@@ -335,7 +351,7 @@ python docs/skills/tradingagents-cn/scripts/invoke_tradingagents_api.py \
 - `GET /watchlist-groups`
 
 ```bash
-python docs/skills/tradingagents-cn/scripts/invoke_tradingagents_api.py \
+python /workspace/projects/workspace/skills/tradingagents-cn/scripts/invoke_tradingagents_api.py \
   --method GET \
   --path /watchlist-groups
 ```
@@ -353,7 +369,7 @@ python docs/skills/tradingagents-cn/scripts/invoke_tradingagents_api.py \
 - `GET /v1/trading-systems/active`
 
 ```bash
-python docs/skills/tradingagents-cn/scripts/invoke_tradingagents_api.py \
+python /workspace/projects/workspace/skills/tradingagents-cn/scripts/invoke_tradingagents_api.py \
   --method GET \
   --path /v1/trading-systems/active
 ```
@@ -370,7 +386,7 @@ python docs/skills/tradingagents-cn/scripts/invoke_tradingagents_api.py \
   - `current_rules`
 
 ```bash
-python docs/skills/tradingagents-cn/scripts/invoke_tradingagents_api.py \
+python /workspace/projects/workspace/skills/tradingagents-cn/scripts/invoke_tradingagents_api.py \
   --method POST \
   --path /v1/trading-systems/generate-risk-rules \
   --body "{\"style\":\"medium_term\",\"risk_profile\":\"balanced\",\"risk_style\":\"balanced\",\"description\":\"偏趋势交易，希望回撤受控，同时保留一部分趋势利润\",\"current_rules\":{\"stop_loss\":{\"type\":\"percentage\",\"percentage\":0.08}}}"
@@ -387,7 +403,7 @@ python docs/skills/tradingagents-cn/scripts/invoke_tradingagents_api.py \
   - `risk_management`
 
 ```bash
-python docs/skills/tradingagents-cn/scripts/invoke_tradingagents_api.py \
+python /workspace/projects/workspace/skills/tradingagents-cn/scripts/invoke_tradingagents_api.py \
   --method POST \
   --path /v1/trading-systems/generate-module-rules \
   --body "{\"module\":\"timing\",\"style\":\"medium_term\",\"risk_profile\":\"balanced\",\"description\":\"希望做顺势突破，减少追高和假突破\",\"current_rules\":{\"market_condition\":{\"rule\":\"大盘环境偏强\",\"description\":\"指数与情绪同步修复\"}}}"
@@ -401,14 +417,14 @@ python docs/skills/tradingagents-cn/scripts/invoke_tradingagents_api.py \
 推荐优先使用 `--body-file`：
 
 ```bash
-python docs/skills/tradingagents-cn/scripts/invoke_tradingagents_api.py \
+python /workspace/projects/workspace/skills/tradingagents-cn/scripts/invoke_tradingagents_api.py \
   --method POST \
   --path /v1/trading-systems/evaluate-draft \
-  --body-file docs/skills/tradingagents-cn/examples/evaluate-draft.json
+  --body-file /workspace/projects/workspace/skills/tradingagents-cn/examples/evaluate-draft.json
 ```
 
 ```bash
-python docs/skills/tradingagents-cn/scripts/invoke_tradingagents_api.py \
+python /workspace/projects/workspace/skills/tradingagents-cn/scripts/invoke_tradingagents_api.py \
   --method POST \
   --path /v1/trading-systems/evaluate-draft \
   --body "{\"name\":\"趋势波段系统\",\"description\":\"中线趋势跟随，优先做强势行业龙头\",\"style\":\"medium_term\",\"risk_profile\":\"balanced\",\"stock_selection\":{\"must_have\":[{\"rule\":\"最近60日相对强度靠前\",\"description\":\"优先选强势股\"}],\"exclude\":[{\"rule\":\"业绩爆雷或财务异常\",\"description\":\"避免基本面大雷\"}],\"bonus\":[{\"rule\":\"行业景气上行\",\"description\":\"提高成功率\"}]},\"timing\":{\"market_condition\":{\"rule\":\"大盘环境偏强\",\"description\":\"指数和情绪同步改善\"},\"entry_signals\":[{\"signal\":\"突破\",\"condition\":\"放量突破平台高点\"}],\"confirmation\":[{\"rule\":\"次日不跌回平台\",\"description\":\"避免假突破\"}]},\"risk_management\":{\"stop_loss\":{\"type\":\"percentage\",\"percentage\":0.08},\"take_profit\":{\"type\":\"trailing\",\"trailing_pullback_pct\":0.08,\"activation_profit_pct\":0.12,\"reference\":\"highest_price\"}}}"
@@ -421,14 +437,14 @@ python docs/skills/tradingagents-cn/scripts/invoke_tradingagents_api.py \
 推荐优先使用 `--body-file`：
 
 ```bash
-python docs/skills/tradingagents-cn/scripts/invoke_tradingagents_api.py \
+python /workspace/projects/workspace/skills/tradingagents-cn/scripts/invoke_tradingagents_api.py \
   --method POST \
   --path /v1/trading-systems/optimize-discussion \
-  --body-file docs/skills/tradingagents-cn/examples/optimize-discussion.json
+  --body-file /workspace/projects/workspace/skills/tradingagents-cn/examples/optimize-discussion.json
 ```
 
 ```bash
-python docs/skills/tradingagents-cn/scripts/invoke_tradingagents_api.py \
+python /workspace/projects/workspace/skills/tradingagents-cn/scripts/invoke_tradingagents_api.py \
   --method POST \
   --path /v1/trading-systems/optimize-discussion \
   --body "{\"trading_plan_data\":{\"name\":\"趋势波段系统\",\"style\":\"medium_term\",\"risk_profile\":\"balanced\",\"description\":\"中线趋势跟随\"},\"evaluation_result\":{\"overall_score\":72,\"grade\":\"B\",\"suggestions\":[\"补充明确的止盈规则\",\"加强选股排除条件\"]},\"user_question\":\"先告诉我最值得优先优化的点，并给出可以直接应用的修改候选\",\"selected_suggestions\":[\"补充明确的止盈规则\"],\"conversation_history\":[{\"role\":\"user\",\"content\":\"我想把计划做得更可执行\"}]}"
@@ -439,7 +455,7 @@ python docs/skills/tradingagents-cn/scripts/invoke_tradingagents_api.py \
 - `POST /v1/trading-systems`
 
 ```bash
-python docs/skills/tradingagents-cn/scripts/invoke_tradingagents_api.py \
+python /workspace/projects/workspace/skills/tradingagents-cn/scripts/invoke_tradingagents_api.py \
   --method POST \
   --path /v1/trading-systems \
   --body "{\"name\":\"趋势波段系统\",\"description\":\"中线趋势跟随，优先做强势行业龙头\",\"style\":\"medium_term\",\"risk_profile\":\"balanced\"}"

@@ -71,6 +71,34 @@
 - `workflow_id`
   可选，仅 `unified` 引擎有效
 
+## `selected_analysts` 已确认可用枚举值
+
+当前已确认的分析师枚举值如下：
+
+- `market`
+- `fundamentals`
+- `news`
+- `sector_analyst`
+- `index_analyst`
+- `social`
+
+如果用户希望指定分析视角，优先把要求映射到这些枚举值，而不是自己编造新名字。
+
+常见映射方式：
+
+- “看大盘环境”
+  `market`
+- “看基本面”
+  `fundamentals`
+- “看新闻催化”
+  `news`
+- “看行业视角”
+  `sector_analyst`
+- “看指数和市场位置”
+  `index_analyst`
+- “看社交舆情”
+  `social`
+
 ## 分析深度含义
 
 项目模型里给了明确说明：
@@ -134,6 +162,8 @@
   保留 `include_risk=true`，并在 `custom_prompt` 中强调风险优先
 - “只做快速初筛”
   `research_depth=快速`
+- “只看基本面和新闻”
+  `selected_analysts=["fundamentals","news"]`
 
 ## 输出重点
 
