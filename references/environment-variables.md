@@ -30,48 +30,51 @@
 3. 其次读取环境变量
 4. 都没有时，再询问用户
 
-## PowerShell 示例
+## PowerShell 模板
 
 ```powershell
-$env:TRADINGAGENTS_BASE_URL = "http://124.222.83.243/api"
-$env:TRADINGAGENTS_USERNAME = "admin"
-$env:TRADINGAGENTS_PASSWORD = "admin123"
+$env:TRADINGAGENTS_BASE_URL = "<your-tradingagents-base-url>"
+$env:TRADINGAGENTS_USERNAME = "<your-username>"
+$env:TRADINGAGENTS_PASSWORD = "<your-password>"
 ```
 
 如果使用 Token：
 
 ```powershell
-$env:TRADINGAGENTS_BASE_URL = "http://124.222.83.243/api"
-$env:TRADINGAGENTS_BEARER_TOKEN = "your_token"
+$env:TRADINGAGENTS_BASE_URL = "<your-tradingagents-base-url>"
+$env:TRADINGAGENTS_BEARER_TOKEN = "<your-bearer-token>"
 ```
 
-## Bash 示例
+不要把示例值当成默认值。真实地址、用户名、密码和 Token 必须来自用户当前环境，而不是 skill 内置常量。
+
+## Bash 模板
 
 ```bash
-export TRADINGAGENTS_BASE_URL="http://124.222.83.243/api"
-export TRADINGAGENTS_USERNAME="admin"
-export TRADINGAGENTS_PASSWORD="admin123"
+export TRADINGAGENTS_BASE_URL="<your-tradingagents-base-url>"
+export TRADINGAGENTS_USERNAME="<your-username>"
+export TRADINGAGENTS_PASSWORD="<your-password>"
 ```
 
 如果使用 Token：
 
 ```bash
-export TRADINGAGENTS_BASE_URL="http://124.222.83.243/api"
-export TRADINGAGENTS_BEARER_TOKEN="your_token"
+export TRADINGAGENTS_BASE_URL="<your-tradingagents-base-url>"
+export TRADINGAGENTS_BEARER_TOKEN="<your-bearer-token>"
 ```
 
 ## 缺失配置时的最短提示
 
-如果缺少环境变量，优先给用户这种短提示，而不是先去跑主请求：
+如果缺少环境变量，优先提醒用户“需要设置这些变量”，而不是先去跑主请求，更不要代入 skill 文档里出现过的历史实例值：
 
 ```powershell
-$env:TRADINGAGENTS_BASE_URL = "http://124.222.83.243/api"
-$env:TRADINGAGENTS_USERNAME = "admin"
-$env:TRADINGAGENTS_PASSWORD = "admin123"
+$env:TRADINGAGENTS_BASE_URL = "<your-tradingagents-base-url>"
+$env:TRADINGAGENTS_USERNAME = "<your-username>"
+$env:TRADINGAGENTS_PASSWORD = "<your-password>"
 ```
 
 ## 安全规则
 
 - 不要在对话中完整展示密码或 Token
 - 可以提醒用户设置环境变量，但不要替用户泄露敏感值
+- 不要因为 skill 文档里出现过示例模板，就把示例值直接拿来连接实例
 - 如果认证失败，只报告失败原因，不回显完整凭证

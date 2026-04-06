@@ -2,14 +2,11 @@
 
 这份参考把当前已经确认的 TradingAgentsCN 调用方式整理成可直接照抄的模板。
 
-当前推荐实例：
+调用前提：
 
-- `TRADINGAGENTS_BASE_URL=http://124.222.83.243/api`
-
-当前默认账号：
-
-- 用户名：`admin`
-- 密码：`admin123`
+- `TRADINGAGENTS_BASE_URL` 必须由当前环境或用户显式提供
+- 用户名/密码或 Bearer Token 也必须来自当前环境或用户显式提供
+- 不要把 skill 文档里出现过的历史实例地址、示例账号或示例 token 当作默认值
 
 ## 推荐调用方式
 

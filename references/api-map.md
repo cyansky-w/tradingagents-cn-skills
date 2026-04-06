@@ -2,15 +2,9 @@
 
 这份文件记录当前可直接使用的 TradingAgentsCN 接口映射。
 
-当前优先使用的实例：
-- `http://124.222.83.243/api`
-
-备用实例：
-- `https://azurestock.cloud/api`
-
 说明：
-- 当前 HTTPS 域名可能存在证书不稳定问题，优先使用 HTTP 实例
-- 下文路径默认都以 `TRADINGAGENTS_BASE_URL=http://124.222.83.243/api` 为基准
+- 这里记录的是相对接口路径，不提供默认实例值
+- 下文路径默认都以 `TRADINGAGENTS_BASE_URL` 为基准
 - 文档页和 OpenAPI 页当前会被前端代理接管，不能单靠 `/docs` 或 `/openapi.json` 推断真实接口
 
 ## 系统基础能力
@@ -27,7 +21,7 @@
 | 用户列表 | `/auth/users` | 由路由常量确认 |
 | 健康检查 | `/health` | 本地启动脚本和主应用都显示存在 |
 | 系统信息 | `/system/info` | 主应用中存在 `/api/system/info`，相对基址为 `/system/info` |
-| 文档页 | `http://124.222.83.243/docs` | 当前存在，但被前端接管 |
+| 文档页 | `<host>/docs` | 当前可能存在，但常被前端接管 |
 
 ## 股票分析
 
@@ -134,8 +128,8 @@
 ## 验证来源
 
 当前映射依据：
-- 用户提供的真实实例地址和账号密码
-- 对 `http://124.222.83.243/api/auth/login`、`/auth/me`、`/portfolio/positions`、`/review/statistics`、`/watchlist-groups`、`/v1/trading-systems/active` 的实测调用
+- 用户提供的真实实例配置
+- 对环境变量指定实例上的 `/auth/login`、`/auth/me`、`/portfolio/positions`、`/review/statistics`、`/watchlist-groups`、`/v1/trading-systems/active` 的实测调用
 - 对仓库内 `.pyc` 路由常量与主应用 `include_router` 挂载关系的提取
 
 仍建议在后续条件允许时，再补一次真实 OpenAPI 导出或前端抓包，进一步确认各接口的请求体字段细节。

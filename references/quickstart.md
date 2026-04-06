@@ -45,13 +45,16 @@ skill 根目录：
 
 ## 默认配置
 
-如果用户没有另行说明，优先按下面的默认配置尝试：
+这个 skill 不内置默认实例地址、默认用户名或默认密码。
 
-- `TRADINGAGENTS_BASE_URL=http://124.222.83.243/api`
-- `TRADINGAGENTS_USERNAME=admin`
-- `TRADINGAGENTS_PASSWORD=admin123`
+必须遵循：
 
-如果环境变量里已经有值，用环境变量覆盖这些默认值。
+- 实例地址来自 `TRADINGAGENTS_BASE_URL`
+- 用户名来自 `TRADINGAGENTS_USERNAME`
+- 密码来自 `TRADINGAGENTS_PASSWORD`
+- 或者直接使用 `TRADINGAGENTS_BEARER_TOKEN`
+
+如果这些值缺失，应报告缺失项，不要擅自使用历史示例地址或示例账号。
 
 ## 必须先检查的环境变量
 

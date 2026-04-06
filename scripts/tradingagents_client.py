@@ -21,12 +21,6 @@ from pathlib import Path
 from typing import Any, Dict, Optional, Tuple
 from urllib import error, parse, request
 
-
-DEFAULT_BASE_URL = "http://124.222.83.243/api"
-DEFAULT_USERNAME = "admin"
-DEFAULT_PASSWORD = "admin123"
-
-
 class TradingAgentsError(RuntimeError):
     """Skill runtime error."""
 
@@ -47,7 +41,8 @@ def _default_cache_path() -> Path:
         return Path(custom).expanduser()
 
     if os.name == "nt":
-        root = Path(os.getenv("LOCALAPPDATA", Path.home() / "AppData" / "Local"))
+        localappdata = os.getenv("LOCALAPPDATA")
+        root = Path(localappdata) if localappdata else Path.home() / "AppData" / "Local"
         return root / "OpenClaw" / "tradingagents-cn" / "session.json"
 
     xdg_cache = os.getenv("XDG_CACHE_HOME")
@@ -57,11 +52,17 @@ def _default_cache_path() -> Path:
 
 def load_config() -> Config:
     timeout_raw = os.getenv("TRADINGAGENTS_TIMEOUT")
+    base_url = (os.getenv("TRADINGAGENTS_BASE_URL") or "").strip()
+    if not base_url:
+        raise TradingAgentsError(
+            "缺少 TRADINGAGENTS_BASE_URL，请先通过环境变量提供 TradingAgentsCN 实例地址。"
+        )
+
     return Config(
-        base_url=(os.getenv("TRADINGAGENTS_BASE_URL") or DEFAULT_BASE_URL).rstrip("/"),
-        username=os.getenv("TRADINGAGENTS_USERNAME") or DEFAULT_USERNAME,
-        password=os.getenv("TRADINGAGENTS_PASSWORD") or DEFAULT_PASSWORD,
-        bearer_token=os.getenv("TRADINGAGENTS_BEARER_TOKEN"),
+        base_url=base_url.rstrip("/"),
+        username=(os.getenv("TRADINGAGENTS_USERNAME") or "").strip() or None,
+        password=(os.getenv("TRADINGAGENTS_PASSWORD") or "").strip() or None,
+        bearer_token=(os.getenv("TRADINGAGENTS_BEARER_TOKEN") or "").strip() or None,
         cache_path=_default_cache_path(),
         timeout=int(timeout_raw) if timeout_raw else 30,
     )
