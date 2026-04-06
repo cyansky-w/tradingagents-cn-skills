@@ -39,9 +39,11 @@ skill 根目录：
 3. 如需预检，可执行一次 `ensure_tradingagents_token.py`
 4. 正式业务调用统一走 `invoke_tradingagents_api.py`
 5. 对正式任务型接口，提交时优先附带 `openclaw_notify`
-6. 如果返回 `task_id`，记录关联信息并立即退出当前等待链路
-7. 由 webhook 或等价官方通知回传结果
-8. 只在收到正式结果后，才汇报“分析完成”
+6. 如果返回 `task_id`，先从脚本响应中提取它
+7. 立即把“任务已提交”和 `task_id` 返回给用户
+8. 明确提醒用户：当前尚未完成，后续等通知
+9. 由 webhook 或等价官方通知回传结果
+10. 只在收到正式结果后，才汇报“分析完成”
 
 ## 默认配置
 
@@ -112,14 +114,40 @@ python /workspace/projects/workspace/skills/tradingagents-cn/scripts/invoke_trad
 
 1. 不要让当前 AI 会话继续等待
 2. 创建任务时优先附带 `openclaw_notify`
-3. 至少记录：
+3. 从脚本返回的 JSON 响应里提取 `task_id`
+4. 立即向用户返回“任务已提交”和 `task_id`
+5. 明确提醒用户当前还没完成，后续结果会通过 webhook 或等价通知回来
+6. 至少记录：
    - `task_id`
    - `status_url`
    - `result_url`
    - `notification_mode`
    - `session_key` 或渠道投递信息
-4. 对外只能汇报“任务已提交”，不能汇报“分析已完成”
-5. 后续由 webhook 或等价官方通知唤醒会话
+7. 对外只能汇报“任务已提交”，不能汇报“分析已完成”
+8. 后续由 webhook 或等价官方通知唤醒会话
+
+脚本返回给 AI 的是完整包装响应，通常形如：
+
+```json
+{
+  "ok": true,
+  "status": 200,
+  "data": {
+    "success": true,
+    "data": {
+      "task_id": "...",
+      "status_url": "...",
+      "result_url": "..."
+    }
+  }
+}
+```
+
+因此常见提取路径是：
+
+- `result["data"]["data"]["task_id"]`
+- `result["data"]["data"]["status_url"]`
+- `result["data"]["data"]["result_url"]`
 
 优先在创建任务时附带：
 

@@ -50,6 +50,8 @@ AI 主要只需要决定：
 - 不要手写 Bearer Token 头作为默认路径
 - 不要把“脚本认证成功”混报成“业务完成”
 - 对返回 `task_id` 的正式任务接口，当前会话只汇报“任务已提交”
+- 对返回 `task_id` 的正式任务接口，必须把 `task_id` 立即回给用户
+- 对返回 `task_id` 的正式任务接口，必须提醒用户“当前尚未完成，后续等通知”
 - 任务型接口优先在请求体中带 `openclaw_notify`
 - 不要在当前会话里阻塞等待异步任务完成
 
@@ -121,6 +123,12 @@ python /workspace/projects/workspace/skills/tradingagents-cn/scripts/invoke_trad
 - `status_url`
 - `result_url`
 - `notification_mode`
+
+脚本输出会把服务端原始 JSON 放在外层返回的 `data` 字段里，因此常见提取路径是：
+
+- `result["data"]["data"]["task_id"]`
+- `result["data"]["data"]["status_url"]`
+- `result["data"]["data"]["result_url"]`
 
 ## 3. 批量分析
 
