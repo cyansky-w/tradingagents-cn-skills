@@ -3,23 +3,25 @@
 这份文件给第一次使用 `tradingagents-cn` skill 的模型看。
 
 目标不是解释所有细节，而是让模型第一次就知道：
-- 先做什么
-- 什么时候调用哪个接口
+
+- 先确认什么
+- 哪些事情由脚本自动处理
+- 什么时候必须走异步任务闭环
 - 遇到什么情况该停下来
 
 ## 一句话理解这个系统
 
-TradingAgentsCN 是一个"先登录，再走业务接口"的交易分析系统。
+TradingAgentsCN 是一个“有正式业务接口、脚本化认证入口和任务回调闭环”的交易分析系统。
 
 不要把它当成普通行情源。
-它更像一个已经封装好了分析、持仓、复盘、交易计划流程的后端服务。
+也不要把它当成可以随便猜 `/analyze` 路径的通用后端。
 
 ## 脚本实际路径
 
 skill 目录位于 `/workspace/projects/workspace/skills/tradingagents-cn/`。
 以下路径全部基于 skill 目录定位，AI 在 exec 调用时需拼接完整路径。
 
-```
+```text
 skill 根目录：
   /workspace/projects/workspace/skills/tradingagents-cn/
 
@@ -32,12 +34,14 @@ skill 根目录：
 
 ## 第一次使用时的最短流程
 
-1. 先读环境变量
-2. 先执行一次 `ensure_tradingagents_token.py`
-3. 再用 `invoke_tradingagents_api.py` 发业务请求
-4. 根据用户意图选择业务模块
-5. 如果返回 `task_id`，优先用 `wait_for_task.py`
-6. 只把用户需要的结论返回给用户
+1. 先确认 `TRADINGAGENTS_BASE_URL`
+2. 确认脚本可用
+3. 如需预检，可执行一次 `ensure_tradingagents_token.py`
+4. 正式业务调用统一走 `invoke_tradingagents_api.py`
+5. 对正式任务型接口，提交时优先附带 `openclaw_notify`
+6. 如果返回 `task_id`，记录关联信息并立即退出当前等待链路
+7. 由 webhook 或等价官方通知回传结果
+8. 只在收到正式结果后，才汇报“分析完成”
 
 ## 默认配置
 
@@ -57,223 +61,221 @@ skill 根目录：
 - `TRADINGAGENTS_BEARER_TOKEN`
 
 优先级：
+
 1. 当前请求显式给出的值
-2. 已存在的 Bearer Token
+2. 已存在的 Bearer Token 或有效缓存
 3. 环境变量
 4. 再向用户追问
 
 ## 推荐脚本入口
 
-优先不要让 AI 自己每次都手写登录逻辑。
+优先不要让 AI 自己手写登录逻辑。
 
-先执行（实际路径）：
+### 预检脚本
 
 ```bash
 python /workspace/projects/workspace/skills/tradingagents-cn/scripts/ensure_tradingagents_token.py
 ```
 
 这个脚本会自动处理：
+
 - 环境变量中的 Bearer Token
 - 本地缓存的 Token
 - 没有有效 Token 时自动登录
 - 用 `/auth/me` 校验 Token 是否仍然可用
 
-然后业务请求统一走（实际路径）：
+### 正式业务入口
 
 ```bash
 python /workspace/projects/workspace/skills/tradingagents-cn/scripts/invoke_tradingagents_api.py --method GET --path /auth/me
 ```
 
 这个脚本会自动处理：
+
 - 先拿可用 Token
 - 再发请求
-- 遇到 `401` 自动重新登录并重试一次
+- 遇到 `401` 自动清缓存
+- 强制重新登录并重试一次
 
-如果接口返回 `task_id`，优先再用（实际路径）：
+所以：
 
-```bash
-python /workspace/projects/workspace/skills/tradingagents-cn/scripts/wait_for_task.py \
-  --task-id TASK_ID \
-  --depth 标准
+- 显式登录不是主业务流程
+- 正式业务请求应统一通过 `invoke_tradingagents_api.py`
+- `ensure_tradingagents_token.py` 更适合作为预检或诊断工具
+
+## 异步任务最短规则
+
+如果正式业务接口返回 `task_id`：
+
+1. 不要让当前 AI 会话继续等待
+2. 创建任务时优先附带 `openclaw_notify`
+3. 至少记录：
+   - `task_id`
+   - `status_url`
+   - `result_url`
+   - `notification_mode`
+   - `session_key` 或渠道投递信息
+4. 对外只能汇报“任务已提交”，不能汇报“分析已完成”
+5. 后续由 webhook 或等价官方通知唤醒会话
+
+优先在创建任务时附带：
+
+```json
+{
+  "openclaw_notify": {
+    "session_key": "hook:trading-task:TASK_ID",
+    "channel": "telegram",
+    "to": "123456789",
+    "deliver": true
+  }
+}
 ```
 
-这个脚本会自动处理：
-- 按 skill 约定的低频轮询节奏等待
-- `completed` 时自动再取结果
-- `failed` 时立刻停止
-- 超时后返回"仍在后台运行"的提示
+服务端需要同时配置 OpenClaw webhook：
 
-推荐记忆方式很简单：
-- 登录：`ensure_tradingagents_token.py`
-- 发请求：`invoke_tradingagents_api.py`
-- 等结果：`wait_for_task.py`
+- `OPENCLAW_HOOK_URL=http://<openclaw-host>/hooks/agent`
+- `OPENCLAW_HOOK_TOKEN=<openclaw bearer token>`
 
-如果请求体比较长，优先不要在命令行里直接写 `--body`，而是改用（实际路径）：
+如果需要完整对接步骤，再读：
 
-```bash
-python /workspace/projects/workspace/skills/tradingagents-cn/scripts/invoke_tradingagents_api.py \
-  --method POST \
-  --path /v1/trading-systems/evaluate-draft \
-  --body-file /workspace/projects/workspace/skills/tradingagents-cn/examples/evaluate-draft.json
-```
+- `references/openclaw-integration.md`
 
 ## 意图到模块的最短路由
 
 ### 用户要分析股票
 
 常见说法：
-- "分析一下 600519"
-- "比较这几只股票"
-- "给我排个优先级"
+
+- “分析一下 600519”
+- “比较这几只股票”
+- “给我排个优先级”
 
 优先走：
+
 - 单股：`POST /analysis/single`
 - 批量：`POST /analysis/batch`
 
 再读：
+
 - `references/stock-analysis.md`
 - `references/call-templates.md`
 
 ### 用户要做交易计划
 
 常见说法：
-- "帮我定一套交易计划"
-- "这套计划合理吗"
-- "帮我优化现有计划"
+
+- “帮我定一套交易计划”
+- “这套计划合理吗”
+- “帮我优化现有计划”
 
 优先判断是哪一段：
+
 - 生成
 - 评估
 - 优化
 
 再读：
+
 - `references/trading-plan.md`
 - `references/call-templates.md`
 
 ### 用户要做持仓分析
 
 常见说法：
-- "我的仓位合理吗"
-- "这只持仓股怎么办"
-- "我能不能加仓"
 
-优先走：
-- 组合级：`POST /portfolio/analysis`
-- 单票汇总持仓：`POST /portfolio/positions/analyze-by-code`
+- “我的仓位合理吗”
+- “这只持仓股怎么办”
+- “我能不能加仓”
+
+优先走正式持仓接口，不要拿查询接口冒充分析接口。
 
 再读：
+
 - `references/portfolio-and-review.md`
 - `references/call-templates.md`
 
 ### 用户要做交易复盘
 
 常见说法：
-- "复盘这笔交易"
-- "复盘这个月"
-- "这笔交易有没有按计划执行"
 
-优先走：
-- 单笔或整笔：`POST /review/trade`
-- 周期复盘：`POST /review/periodic`
+- “复盘这笔交易”
+- “复盘这个月”
+- “这笔交易有没有按计划执行”
+
+优先走正式复盘接口，不要只返回交易记录。
 
 再读：
+
 - `references/portfolio-and-review.md`
 - `references/call-templates.md`
 
 ### 用户要管理自选股
 
 常见说法：
-- "建一个自选组"
-- "把这几只票加入观察"
-- "把股票从 A 组移到 B 组"
+
+- “建一个自选组”
+- “把这几只票加入观察”
+- “把股票从 A 组移到 B 组”
 
 优先走：
+
 - `GET/POST /watchlist-groups`
 - `GET/POST/DELETE /watchlist-groups/{group_id}/stocks`
 
 再读：
+
 - `references/watchlist.md`
 - `references/api-map.md`
 
 ## 参数处理原则
 
 不要要求用户先学内部字段名。
-
 应该先把用户自然语言转成系统参数，再发请求。
 
 例如：
-- "先快速看一眼"
+
+- “先快速看一眼”
   优先映射成较浅的 `research_depth`
-- "偏保守"
+- “偏保守”
   优先映射成更稳健的风控或风险参数
-- "按我的交易计划复盘"
+- “按我的交易计划复盘”
   复盘时优先补 `trading_system_id`
 
-## 轮询等待规则
+对股票输入，优先规范成真实代码：
 
-对会返回 `task_id` 的异步任务，不要高频轮询。
+- `002837`
+- `600519`
 
-默认规则：
-- 提交任务后不要立刻查状态
-- 第一次状态检查放在 `30` 秒后
-- 后续默认每 `30` 到 `60` 秒轮询一次
-- 不要低于每 `30` 秒一次
-
-按分析深度可进一步调整：
-- `快速`、`基础`
-  首次检查 `30` 秒后，后续每 `30` 秒一次
-- `标准`
-  首次检查 `30` 秒后，后续每 `30` 到 `45` 秒一次
-- `深度`、`全面`
-  首次检查 `45` 秒后，后续每 `45` 到 `60` 秒一次
-
-停止条件：
-- 如果状态变成 `completed`，立刻取结果
-- 如果状态变成 `failed` 或 `error`，立刻停止，不再继续轮询
-- 如果超过预期上限仍未完成，告诉用户"任务仍在后台运行"，并保留 `task_id`
-
-建议的最长等待：
-- `快速`、`基础`：最多 `360` 秒（`6` 分钟）
-- `标准`：最多 `720` 秒（`12` 分钟）
-- `深度`：最多 `1080` 秒（`18` 分钟）
-- `全面`：最多 `1800` 秒（`30` 分钟）
+如果用户给的是 `002837.SZ` 这类格式，优先转成主代码并保留市场信息。
+如果用户只给中文名称且无法可靠映射，询问一次代码，不要去穷举接口试探。
 
 ## 什么时候不要硬调接口
 
 遇到这些情况先停下来：
 
-- 还没有有效登录态
+- 还没有 `TRADINGAGENTS_BASE_URL`
+- 脚本不可用
 - 用户没给关键标识，而且系统也无法推断
-  例如完全没给股票代码、交易 ID、计划 ID
 - 接口已经明确返回参数校验错误
 - 当前问题更适合直接用通用数据 skill，而不是 TradingAgentsCN
+- 当前需要异步回调，但环境没有 webhook 或等价通知能力
 
 ## 最小输出原则
 
 对用户只返回：
+
 - 你做了什么
-- 结论是什么
+- 当前状态是什么
+- 如果已完成，结论是什么
 - 风险点是什么
 - 下一步建议是什么
 
 不要把原始接口字段、长 JSON、内部路由细节直接甩给用户。
 
-## 给 AI 的实际执行原则
-
-- 每次开始使用这个 skill 时，先跑一次 `ensure_tradingagents_token.py`
-- 之后所有接口调用都优先走 `invoke_tradingagents_api.py`
-- 如果业务接口返回 `task_id`，优先走 `wait_for_task.py`
-- AI 只需要关心：
-  - 该选哪个业务接口
-  - 该传什么业务参数
-  - 结果该怎么解释给用户
-- AI 不需要重复手写登录流程、拼 Token 头、处理 401 续登
-- 复杂 JSON 优先放到 `examples/*.json` 或临时 JSON 文件里，再用 `--body-file`
-
 ## 首次加载建议阅读顺序
 
 1. 先读本文件
-2. 再读 `references/environment-variables.md`
-3. 再读 `references/auth-and-session.md`
+2. 再读 `references/auth-and-session.md`
+3. 再读 `references/environment-variables.md`
 4. 然后按意图只读一个业务参考
 5. 最后需要模板时再读 `references/call-templates.md`

@@ -2,6 +2,12 @@
 
 这份参考用于单股分析、批量分析，以及把自然语言目标翻译成 TradingAgentsCN 的真实分析参数。
 
+核心规则：
+
+- 正式入口只有文档确认的股票分析接口
+- 单股和批量分析默认按任务型接口处理
+- 一旦返回 `task_id`，AI 只记录并退出等待，不持续轮询
+
 ## 适用接口
 
 - 单股分析：`POST /analysis/single`
@@ -9,34 +15,54 @@
 - 任务状态：`GET /analysis/tasks/{task_id}/status`
 - 任务结果：`GET /analysis/tasks/{task_id}/result`
 
+## 禁止事项
+
+- 不要猜测同步 `/analyze`、`/analysis/run`、`/stock/analyze` 之类路径
+- 不要把轻量探测、参数校验响应或 `200` 状态码表述为“分析完成”
+- 不要在当前 AI 会话中持续等待任务结果
+- 不要因为暂时拿不到回调，就自动改走未确认的同步替代路径
+
 ## 何时优先使用 TradingAgentsCN
 
 以下情况优先使用 TradingAgentsCN，而不是通用行情或 Tushare skill：
+
 - 用户希望直接调用项目已有分析接口得到结果
 - 用户希望复用现成分析任务队列，而不是外部自己拼提示词
 - 用户希望后续继续衔接持仓分析、交易计划、复盘等系统内链路
 
-## 真实请求结构
+## 输入规范
 
 ### 单股分析
 
 顶层字段：
+
 - `symbol`
 - `parameters`
+- `openclaw_notify`
 
 说明：
+
 - `symbol` 是主字段，描述为 `6位股票代码`
 - `stock_code` 仍存在，但模型中已标记为废弃字段，不要优先使用
+
+用户输入规范化规则：
+
+- `000001` -> 直接作为 `symbol`
+- `002837.SZ` -> 规范成 `002837`，并把市场提示保留到 `market_type`
+- 中文股票名 -> 若上下文不能可靠映射成唯一代码，只询问一次真实代码
 
 ### 批量分析
 
 顶层字段：
+
 - `title`
 - `description`
 - `symbols`
 - `parameters`
+- `openclaw_notify`
 
 说明：
+
 - `title` 是必填
 - `symbols` 最多 `10` 个
 - `stock_codes` 也存在，但已废弃
@@ -48,7 +74,7 @@
 - `market_type`
   默认值：`A股`
 - `analysis_date`
-  可选，时间格式
+  可选
 - `research_depth`
   默认值：`标准`
 - `selected_analysts`
@@ -73,8 +99,6 @@
 
 ## `selected_analysts` 已确认可用枚举值
 
-当前已确认的分析师枚举值如下：
-
 - `market`
 - `fundamentals`
 - `news`
@@ -82,26 +106,16 @@
 - `index_analyst`
 - `social`
 
-如果用户希望指定分析视角，优先把要求映射到这些枚举值，而不是自己编造新名字。
-
 常见映射方式：
 
-- “看大盘环境”
-  `market`
-- “看基本面”
-  `fundamentals`
-- “看新闻催化”
-  `news`
-- “看行业视角”
-  `sector_analyst`
-- “看指数和市场位置”
-  `index_analyst`
-- “看社交舆情”
-  `social`
+- “看大盘环境” -> `market`
+- “看基本面” -> `fundamentals`
+- “看新闻催化” -> `news`
+- “看行业视角” -> `sector_analyst`
+- “看指数和市场位置” -> `index_analyst`
+- “看社交舆情” -> `social`
 
 ## 分析深度含义
-
-项目模型里给了明确说明：
 
 - `快速`
   1级，约 2 到 4 分钟
@@ -137,53 +151,48 @@
 - “我要中文结果”
   `language=zh-CN`
 
-## 可以传入分析偏好的字段
+## 单股分析标准流程
 
-如果用户对分析风格、关注点或输出侧重点有要求，优先把偏好落到真实请求字段里，而不是只写在说明文字里。
+1. 确认正式入口是 `POST /analysis/single`
+2. 规范化 `symbol`
+3. 组装 `parameters`
+4. 提交请求时附带 `openclaw_notify`
+5. 记录：
+   - `task_id`
+   - `status_url`
+   - `result_url`
+   - `notification_mode`
+6. 当前会话只汇报“任务已提交”
+7. 等待 webhook 或等价官方结果通知
+8. 收到正式结果后再输出：
+   - 核心观点
+   - 看多与看空理由
+   - 主要风险
+   - 建议动作或下一步检查点
 
-常用字段：
+完成判定：
 
-- `custom_prompt`
-  适合放“重点看什么”“不要看什么”“输出更偏哪种视角”
-- `selected_analysts`
-  适合控制参与分析的分析师集合
-- `research_depth`
-  适合控制分析深度和等待时长
-- `include_sentiment`
-  适合控制是否纳入情绪面
-- `include_risk`
-  适合控制是否强调风险面
+- 必须拿到 `task_id`
+- 必须拿到正式结果
+- 仅提交成功不算完成
 
-示例偏好：
+## 批量分析标准流程
 
-- “重点看基本面质量和未来 1 到 3 个月观察位”
-  放进 `custom_prompt`
-- “更保守一些，风险提示多写一点”
-  保留 `include_risk=true`，并在 `custom_prompt` 中强调风险优先
-- “只做快速初筛”
-  `research_depth=快速`
-- “只看基本面和新闻”
-  `selected_analysts=["fundamentals","news"]`
-
-## 输出重点
-
-### 单股分析输出应重点总结
-
-- 核心观点
-- 看多与看空理由
-- 主要风险
-- 建议动作或下一步检查点
-
-### 批量分析输出应重点总结
-
-- 排名结果
-- 重点候选股
-- 淘汰理由
-- 后续建议
+1. 确认正式入口是 `POST /analysis/batch`
+2. 规范化 `title`、`symbols` 和 `parameters`
+3. 附带 `openclaw_notify`
+4. 记录任务关联信息
+5. 当前会话不等待
+6. 收到正式结果后再输出：
+   - 排名结果
+   - 重点候选股
+   - 淘汰理由
+   - 后续建议
 
 ## 调用约束
 
 - 单股分析至少要提供有效 `symbol`
 - 批量分析至少要提供 `title`
 - 批量分析的 `symbols` 上限是 `10`
-- 如果只是试探接口是否在线，不要立刻发起重型任务，先用最小请求观察校验反馈
+- 异步任务优先使用 `openclaw_notify`
+- 如果只是试探接口是否在线，不要立刻发起重型任务，先用最小正式请求观察校验反馈
