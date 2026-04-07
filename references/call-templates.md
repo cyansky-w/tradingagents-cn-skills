@@ -15,7 +15,7 @@
 ### 预检脚本
 
 ```bash
-python /workspace/projects/workspace/skills/tradingagents-cn/scripts/ensure_tradingagents_token.py
+python ./scripts/ensure_tradingagents_token.py
 ```
 
 说明：
@@ -27,7 +27,7 @@ python /workspace/projects/workspace/skills/tradingagents-cn/scripts/ensure_trad
 ### 统一业务入口
 
 ```bash
-python /workspace/projects/workspace/skills/tradingagents-cn/scripts/invoke_tradingagents_api.py \
+python ./scripts/invoke_tradingagents_api.py \
   --method GET \
   --path /auth/me
 ```
@@ -75,10 +75,10 @@ AI 主要只需要决定：
 示例：
 
 ```bash
-python /workspace/projects/workspace/skills/tradingagents-cn/scripts/invoke_tradingagents_api.py \
+python ./scripts/invoke_tradingagents_api.py \
   --method POST \
   --path /v1/trading-systems/evaluate-draft \
-  --body-file /workspace/projects/workspace/skills/tradingagents-cn/examples/evaluate-draft.json
+  --body-file ./examples/evaluate-draft.json
 ```
 
 ## 1. 登录与当前用户
@@ -92,7 +92,7 @@ python /workspace/projects/workspace/skills/tradingagents-cn/scripts/invoke_trad
 获取当前用户：
 
 ```bash
-python /workspace/projects/workspace/skills/tradingagents-cn/scripts/invoke_tradingagents_api.py \
+python ./scripts/invoke_tradingagents_api.py \
   --method GET \
   --path /auth/me
 ```
@@ -111,7 +111,7 @@ python /workspace/projects/workspace/skills/tradingagents-cn/scripts/invoke_trad
 脚本调用模板：
 
 ```bash
-python /workspace/projects/workspace/skills/tradingagents-cn/scripts/invoke_tradingagents_api.py \
+python ./scripts/invoke_tradingagents_api.py \
   --method POST \
   --path /analysis/single \
   --body "{\"symbol\":\"000001\",\"parameters\":{\"market_type\":\"A股\",\"research_depth\":\"标准\",\"selected_analysts\":[\"fundamentals\",\"news\",\"market\"],\"include_sentiment\":true,\"include_risk\":true,\"language\":\"zh-CN\",\"quick_analysis_model\":\"qwen-turbo\",\"deep_analysis_model\":\"qwen-max\",\"engine\":\"v2\",\"custom_prompt\":\"重点看基本面质量、风险点，以及未来1到3个月的观察位\"},\"openclaw_notify\":{\"session_key\":\"hook:trading-task:single-000001\",\"channel\":\"telegram\",\"to\":\"123456789\",\"deliver\":true}}"
@@ -139,7 +139,7 @@ python /workspace/projects/workspace/skills/tradingagents-cn/scripts/invoke_trad
 脚本调用模板：
 
 ```bash
-python /workspace/projects/workspace/skills/tradingagents-cn/scripts/invoke_tradingagents_api.py \
+python ./scripts/invoke_tradingagents_api.py \
   --method POST \
   --path /analysis/batch \
   --body "{\"title\":\"核心候选股对比\",\"description\":\"比较多只候选股，输出排序和后续重点跟踪对象\",\"symbols\":[\"000001\",\"600519\",\"000858\"],\"parameters\":{\"market_type\":\"A股\",\"research_depth\":\"标准\",\"selected_analysts\":[\"fundamentals\",\"sector_analyst\",\"market\"],\"include_sentiment\":true,\"include_risk\":true,\"language\":\"zh-CN\",\"engine\":\"v2\",\"custom_prompt\":\"请输出排序结果，并说明最值得继续深挖的前2只股票\"},\"openclaw_notify\":{\"session_key\":\"hook:trading-task:batch-core\",\"channel\":\"telegram\",\"to\":\"123456789\",\"deliver\":true}}"
@@ -170,7 +170,7 @@ python /workspace/projects/workspace/skills/tradingagents-cn/scripts/invoke_trad
 ### 查询持仓
 
 ```bash
-python /workspace/projects/workspace/skills/tradingagents-cn/scripts/invoke_tradingagents_api.py \
+python ./scripts/invoke_tradingagents_api.py \
   --method GET \
   --path /portfolio/positions
 ```
@@ -178,7 +178,7 @@ python /workspace/projects/workspace/skills/tradingagents-cn/scripts/invoke_trad
 ### 组合级持仓分析
 
 ```bash
-python /workspace/projects/workspace/skills/tradingagents-cn/scripts/invoke_tradingagents_api.py \
+python ./scripts/invoke_tradingagents_api.py \
   --method POST \
   --path /portfolio/analysis \
   --body "{\"include_paper\":true,\"research_depth\":\"标准\"}"
@@ -187,7 +187,7 @@ python /workspace/projects/workspace/skills/tradingagents-cn/scripts/invoke_trad
 ### 按代码做持仓分析
 
 ```bash
-python /workspace/projects/workspace/skills/tradingagents-cn/scripts/invoke_tradingagents_api.py \
+python ./scripts/invoke_tradingagents_api.py \
   --method POST \
   --path /portfolio/positions/analyze-by-code \
   --body "{\"code\":\"000001\",\"market\":\"CN\",\"research_depth\":\"标准\",\"include_add_position\":true,\"target_profit_pct\":20.0,\"total_capital\":300000,\"max_position_pct\":30.0,\"max_loss_pct\":10.0,\"risk_tolerance\":\"medium\",\"investment_horizon\":\"medium\",\"analysis_focus\":\"comprehensive\",\"position_type\":\"real\",\"use_stock_analysis\":true}"
@@ -200,7 +200,7 @@ python /workspace/projects/workspace/skills/tradingagents-cn/scripts/invoke_trad
 ### 单笔或整笔复盘
 
 ```bash
-python /workspace/projects/workspace/skills/tradingagents-cn/scripts/invoke_tradingagents_api.py \
+python ./scripts/invoke_tradingagents_api.py \
   --method POST \
   --path /review/trade \
   --body "{\"trade_ids\":[\"trade_id_1\",\"trade_id_2\"],\"review_type\":\"complete_trade\",\"source\":\"paper\",\"use_workflow\":true}"
@@ -209,7 +209,7 @@ python /workspace/projects/workspace/skills/tradingagents-cn/scripts/invoke_trad
 ### 周期复盘
 
 ```bash
-python /workspace/projects/workspace/skills/tradingagents-cn/scripts/invoke_tradingagents_api.py \
+python ./scripts/invoke_tradingagents_api.py \
   --method POST \
   --path /review/periodic \
   --body "{\"period_type\":\"month\",\"start_date\":\"2026-04-01\",\"end_date\":\"2026-04-30\",\"source\":\"paper\"}"
@@ -223,7 +223,7 @@ python /workspace/projects/workspace/skills/tradingagents-cn/scripts/invoke_trad
 ### 风控规则生成
 
 ```bash
-python /workspace/projects/workspace/skills/tradingagents-cn/scripts/invoke_tradingagents_api.py \
+python ./scripts/invoke_tradingagents_api.py \
   --method POST \
   --path /v1/trading-systems/generate-risk-rules \
   --body "{\"style\":\"medium_term\",\"risk_profile\":\"balanced\",\"risk_style\":\"balanced\",\"description\":\"偏趋势交易，希望回撤受控，同时保留一部分趋势利润\",\"current_rules\":{\"stop_loss\":{\"type\":\"percentage\",\"percentage\":0.08}}}"
@@ -232,7 +232,7 @@ python /workspace/projects/workspace/skills/tradingagents-cn/scripts/invoke_trad
 ### 模块规则生成
 
 ```bash
-python /workspace/projects/workspace/skills/tradingagents-cn/scripts/invoke_tradingagents_api.py \
+python ./scripts/invoke_tradingagents_api.py \
   --method POST \
   --path /v1/trading-systems/generate-module-rules \
   --body "{\"module\":\"timing\",\"style\":\"medium_term\",\"risk_profile\":\"balanced\",\"description\":\"希望做顺势突破，减少追高和假突破\",\"current_rules\":{\"market_condition\":{\"rule\":\"大盘环境偏强\",\"description\":\"指数与情绪同步修复\"}}}"
@@ -241,19 +241,19 @@ python /workspace/projects/workspace/skills/tradingagents-cn/scripts/invoke_trad
 ### 评估草稿计划
 
 ```bash
-python /workspace/projects/workspace/skills/tradingagents-cn/scripts/invoke_tradingagents_api.py \
+python ./scripts/invoke_tradingagents_api.py \
   --method POST \
   --path /v1/trading-systems/evaluate-draft \
-  --body-file /workspace/projects/workspace/skills/tradingagents-cn/examples/evaluate-draft.json
+  --body-file ./examples/evaluate-draft.json
 ```
 
 ### 优化讨论
 
 ```bash
-python /workspace/projects/workspace/skills/tradingagents-cn/scripts/invoke_tradingagents_api.py \
+python ./scripts/invoke_tradingagents_api.py \
   --method POST \
   --path /v1/trading-systems/optimize-discussion \
-  --body-file /workspace/projects/workspace/skills/tradingagents-cn/examples/optimize-discussion.json
+  --body-file ./examples/optimize-discussion.json
 ```
 
 ## 8. 自选股接口
@@ -261,7 +261,7 @@ python /workspace/projects/workspace/skills/tradingagents-cn/scripts/invoke_trad
 ### 查询分组
 
 ```bash
-python /workspace/projects/workspace/skills/tradingagents-cn/scripts/invoke_tradingagents_api.py \
+python ./scripts/invoke_tradingagents_api.py \
   --method GET \
   --path /watchlist-groups
 ```
